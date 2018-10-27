@@ -1,4 +1,4 @@
-import { game } from './bunny'
+import { game } from './game'
 
 const state = {
   textColor: 'red',
@@ -24,19 +24,19 @@ const actions = {
   }
 }
 
-const text = ({ text: propsText, x, y }) => ({ text: stateText, font, textColor }, _, { ctx }) => {
-  ctx.font = font
-  ctx.fillStyle = textColor
-  ctx.fillText(stateText || propsText, x, y)
+const text = ({ text: propsText, x, y }) => ({ text: stateText, font, textColor }, _, { render }) => {
+  render.font = font
+  render.fillStyle = textColor
+  render.fillText(stateText || propsText, x, y)
 }
 
 const rect = ({ color, width, height }) => (state, actions, context) => {
   const { rect: { x, y, direction } } = state
   const { rect: { move, changeDirection } } = actions
-  const { ctx, w, h } = context
+  const { render, w, h } = context
 
-  ctx.fillStyle = color
-  ctx.fillRect(x, y, width, height)
+  render.fillStyle = color
+  render.fillRect(x, y, width, height)
 
   if ((x + width) >= w && direction !== 'left') {
     changeDirection('left')

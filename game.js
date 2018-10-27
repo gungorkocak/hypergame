@@ -4,7 +4,7 @@ export const game = ({ w, h }) => (state, actions, view, container) => {
 
   var rootElement = (container && container.children[0]) || null
   var canvas = document.createElement('canvas')
-  var ctx = canvas.getContext('2d')
+  var render = canvas.getContext('2d')
 
   canvas.width = w || 800
   canvas.height = h || 600
@@ -13,10 +13,10 @@ export const game = ({ w, h }) => (state, actions, view, container) => {
   container.removeChild(rootElement)
 
   const resolve = (view) => {
-    let children = view(globalState, wiredActions, { ctx, w, h })
+    let children = view(globalState, wiredActions, { render, w, h })
 
     if (typeof children === 'function') {
-      children = children(globalState, wiredActions, { ctx, w, h })
+      children = children(globalState, wiredActions, { render, w, h })
     }
 
     if (typeof children === 'object' && children.length) {
@@ -27,7 +27,7 @@ export const game = ({ w, h }) => (state, actions, view, container) => {
   }
 
   const update = (timestamp) => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    render.clearRect(0, 0, canvas.width, canvas.height)
 
     resolve(view)
 
