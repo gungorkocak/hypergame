@@ -1,4 +1,5 @@
 import { game } from './game'
+import canvas from './systems/canvas'
 
 const state = {
   textColor: 'red',
@@ -24,19 +25,19 @@ const actions = {
   }
 }
 
-const text = ({ text: propsText, x, y }) => ({ text: stateText, font, textColor }, _, { render }) => {
-  render.font = font
-  render.fillStyle = textColor
-  render.fillText(stateText || propsText, x, y)
+const text = ({ text: propsText, x, y }) => ({ text: stateText, font, textColor }, _, { canvas: { ctx } }) => {
+  ctx.font = font
+  ctx.fillStyle = textColor
+  ctx.fillText(stateText || propsText, x, y)
 }
 
 const rect = ({ color, width, height }) => (state, actions, context) => {
   const { rect: { x, y, direction } } = state
   const { rect: { move, changeDirection } } = actions
-  const { render, w, h } = context
+  const { canvas: { ctx, w } } = context
 
-  render.fillStyle = color
-  render.fillRect(x, y, width, height)
+  ctx.fillStyle = color
+  ctx.fillRect(x, y, width, height)
 
   if ((x + width) >= w && direction !== 'left') {
     changeDirection('left')
@@ -54,7 +55,9 @@ const view = (_state, _actions, _context) =>
     rect({ color: 'blue', width: 50, height: 50 })
   ]
 
-const main = game({ w: 800, h: 400 })(state, actions, view, document.body)
+const main = game({
+  canvas: canvas({ w: 800, h: 400 })
+})(state, actions, view, document.body)
 
 main.update()
 

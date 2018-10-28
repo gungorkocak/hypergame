@@ -1,37 +1,39 @@
-export const game = ({ w, h }) => (state, actions, view, container) => {
+export const game = (systems = {}) => (state, actions, view, container) => {
   var globalState = clone(state)
   var wiredActions = wireStateToActions([], globalState, clone(actions))
-
-  var rootElement = (container && container.children[0]) || null
-  var canvas = document.createElement('canvas')
-  var render = canvas.getContext('2d')
-
-  canvas.width = w || 800
-  canvas.height = h || 600
-
-  container.insertBefore(canvas, rootElement)
-  container.removeChild(rootElement)
-
-  const resolve = (view) => {
-    let children = view(globalState, wiredActions, { render, w, h })
-
-    if (typeof children === 'function') {
-      children = children(globalState, wiredActions, { render, w, h })
-    }
-
-    if (typeof children === 'object' && children.length) {
-      for (let node of children) {
-        resolve(node)
-      }
-    }
-  }
+  const { contexts, updates } = init(systems, container)
 
   const update = (timestamp) => {
-    render.clearRect(0, 0, canvas.width, canvas.height)
+    for (let update in updates) updates[update](timestamp)
 
     resolve(view)
 
     window.requestAnimationFrame(update)
+  }
+
+  function resolve(view) {
+    let children = view(globalState, wiredActions, contexts)
+
+    if (typeof children === 'function') {
+      children = children(globalState, wiredActions, contexts)
+    }
+
+    if (typeof children === 'object' && children.length) {
+      for (let node of children) resolve(node)
+    }
+  }
+
+  function init(systems, container) {
+    var contexts = {}, updates = {}
+
+    for (let system in systems) {
+      const { context, update } = systems[system](container)
+
+      contexts[system] = context
+      updates[system] = update
+    }
+
+    return { contexts, updates }
   }
 
   function clone(target, source) {
