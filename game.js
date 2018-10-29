@@ -12,13 +12,19 @@ export const game = (systems = {}) => (state, actions, view, container) => {
   }
 
   function resolve(view) {
-    let children = view(globalState, wiredActions, contexts)
+    let children
+
+    if (typeof view === 'function') {
+      children = view(globalState, wiredActions, contexts)
+    }
+    else if (typeof view === 'object' && view.length) {
+      for (let i = 0; i < view.length; i++) resolve(view[i])
+    }
 
     if (typeof children === 'function') {
       children = children(globalState, wiredActions, contexts)
     }
-
-    if (typeof children === 'object' && children.length) {
+    else if (typeof children === 'object' && children.length) {
       for (let node of children) resolve(node)
     }
   }
